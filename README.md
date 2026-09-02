@@ -1,98 +1,342 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🏨 BlueHorizon Resort API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📋 Descripción
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**BlueHorizon Resort API** es una API REST desarrollada para automatizar la gestión hotelera de un hotel boutique frente al mar.
 
-## Description
+El sistema busca solucionar problemas relacionados con la sobreventa de habitaciones y la falta de control sobre los servicios consumidos por los huéspedes durante su estadía.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Actualmente, el registro manual de reservas dificulta conocer con exactitud:
 
-## Project setup
+* Qué habitaciones se encuentran disponibles.
+* A qué categoría pertenece cada habitación.
+* Qué huésped está asociado a una estadía.
+* Qué servicios adicionales ha consumido cada huésped.
+* El valor acumulado de la cuenta al momento del check-out.
 
-```bash
-$ npm install
+La API permite gestionar habitaciones, huéspedes, estadías y consumos adicionales de manera organizada.
+
+---
+
+# 🎯 Objetivo del Proyecto
+
+Desarrollar una API REST que permita automatizar:
+
+* La gestión de tipos de habitación.
+* El control de las habitaciones del hotel.
+* El registro de huéspedes.
+* La creación y administración de estadías.
+* El registro de consumos adicionales.
+* El cálculo automático del subtotal de una estadía.
+* La consulta detallada de la cuenta de un huésped.
+
+---
+
+# 🛠️ Tecnologías Utilizadas
+
+El proyecto utiliza el siguiente stack tecnológico:
+
+* **Node.js**
+* **NestJS**
+* **TypeORM**
+* **MySQL**
+* **Variables de entorno (.env)**
+* **DTOs (Data Transfer Objects)**
+
+---
+
+# 🏗️ Arquitectura
+
+El proyecto utiliza la arquitectura modular proporcionada por NestJS.
+
+Cada módulo está compuesto principalmente por:
+
+* **Module**
+* **Controller**
+* **Service**
+* **Entity**
+* **DTOs**
+
+También se utiliza la inyección de dependencias para administrar los servicios y repositorios.
+
+---
+
+# 📦 Funcionalidades
+
+## 🛏️ Gestión de Tipos de Habitación
+
+El sistema permite registrar diferentes categorías de habitaciones.
+
+Ejemplos:
+
+* Suite Presidencial.
+* Doble Estándar.
+* Sencilla.
+
+Cada tipo de habitación cuenta con su respectivo:
+
+* Nombre o categoría.
+* Precio base por noche.
+
+---
+
+## 🚪 Gestión de Habitaciones
+
+Permite administrar las habitaciones físicas del hotel.
+
+Cada habitación está relacionada con un tipo de habitación y cuenta con información como:
+
+* Tipo de habitación.
+* Número de habitación.
+* Número de piso.
+
+---
+
+## 👤 Gestión de Huéspedes
+
+El sistema permite registrar y administrar la información de los huéspedes que realizan check-in en el hotel.
+
+---
+
+## 📅 Gestión de Estadías
+
+Una estadía representa la permanencia de un huésped en una habitación.
+
+Cada estadía está vinculada con:
+
+* Un huésped.
+* Una habitación específica.
+* El número de noches registradas.
+
+El sistema calcula automáticamente el subtotal de la estadía utilizando la siguiente lógica:
+
+```text
+Subtotal = Precio base por noche × Número de noches
 ```
 
-## Compile and run the project
+Este cálculo se realiza internamente dentro de la lógica de negocio.
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## 🧾 Gestión de Consumos
 
-# production mode
-$ npm run start:prod
+Durante una estadía, un huésped puede registrar múltiples consumos adicionales.
+
+Algunos ejemplos son:
+
+* Servicio al cuarto.
+* Minibar.
+* Lavandería.
+
+Cada consumo queda asociado a la estadía correspondiente.
+
+---
+
+## 💰 Consulta de Cuenta del Huésped
+
+El sistema permite obtener el detalle de la cuenta de un huésped.
+
+La consulta debe mostrar:
+
+* Número de habitación.
+* Tipo de habitación.
+* Lista de consumos adicionales.
+* Subtotal de la estadía.
+* Total acumulado.
+
+---
+
+# 🗂️ Modelo General del Sistema
+
+Las principales entidades del sistema son:
+
+```text
+TipoHabitacion
+       │
+       │ 1
+       │
+       ▼
+Habitacion
+       │
+       │
+       ▼
+Estadia ◄──────── Huesped
+       │
+       │ 1
+       │
+       ▼
+    Consumos
 ```
 
-## Run tests
+Relaciones principales:
 
-```bash
-# unit tests
-$ npm run test
+* Un **tipo de habitación** puede estar asociado a varias habitaciones.
+* Una **habitación** pertenece a un tipo de habitación.
+* Una **estadía** está asociada a un huésped.
+* Una **estadía** está asociada a una habitación.
+* Una **estadía** puede tener múltiples consumos adicionales.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
+# 🌿 Organización de Ramas
+
+El proyecto se divide en cuatro ramas principales para facilitar el trabajo colaborativo.
+
+### `feature/database-model`
+
+Responsable de:
+
+* Modelado de la base de datos.
+* Relaciones entre entidades.
+* Configuración de MySQL.
+* Configuración de TypeORM.
+* Variables de entorno.
+
+---
+
+### `feature/rooms`
+
+Responsable de:
+
+* Tipos de habitación.
+* Habitaciones.
+* CRUD correspondiente.
+* DTOs, servicios y controladores.
+
+---
+
+### `feature/guests-stays`
+
+Responsable de:
+
+* Gestión de huéspedes.
+* Gestión de estadías.
+* Registro de reservas.
+* Cálculo automático del subtotal.
+
+---
+
+### `feature/consumptions-account`
+
+Responsable de:
+
+* Registro de consumos.
+* Relación entre consumos y estadías.
+* Consulta detallada de la cuenta del huésped.
+* Cálculo del total acumulado.
+
+---
+
+# 🔄 Flujo de Trabajo con Git
+
+El orden recomendado para integrar las funcionalidades es:
+
+```text
+1. feature/database-model
+            ↓
+          main
+            ↓
+2. feature/rooms
+            ↓
+          main
+            ↓
+3. feature/guests-stays
+            ↓
+          main
+            ↓
+4. feature/consumptions-account
+            ↓
+          main
 ```
 
-## Deployment
+Antes de realizar un Pull Request, cada integrante debe actualizar su rama con los últimos cambios de `main`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+# ⚙️ Configuración del Proyecto
+
+## 1. Clonar el repositorio
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone <URL_DEL_REPOSITORIO>
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Entrar al directorio:
 
-## Resources
+```bash
+cd <NOMBRE_DEL_PROYECTO>
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 2. Instalar dependencias
 
-## Support
+```bash
+npm install
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## 3. Configurar las variables de entorno
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Crear un archivo llamado:
 
-## License
+```text
+.env
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Las credenciales de conexión a la base de datos deben configurarse mediante variables de entorno.
+
+Ejemplo:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=tu_password
+DB_DATABASE=bluehorizon_resort
+```
+
+---
+
+## 4. Ejecutar el proyecto
+
+Para iniciar el servidor en modo desarrollo:
+
+```bash
+npm run start:dev
+```
+
+---
+
+# 📚 Requerimientos Técnicos
+
+El proyecto cumple con los siguientes requerimientos:
+
+* Uso de **NestJS**.
+* Arquitectura basada en módulos, controladores y servicios.
+* Persistencia de datos mediante **TypeORM**.
+* Base de datos **MySQL**.
+* Uso de variables de entorno mediante `.env`.
+* Implementación de **DTOs** para los endpoints de creación y actualización.
+* Uso de inyección de dependencias.
+* Uso de repositorios inyectados en los servicios.
+
+---
+
+# 👥 Equipo de Desarrollo
+
+El proyecto es desarrollado de manera colaborativa por un equipo de cuatro integrantes.
+
+| Integrante | Área de responsabilidad            | Rama                           |
+| ---------- | ---------------------------------- | ------------------------------ |
+| Sebas  | Base de datos y modelado           | `feature/modeloDB`       |
+| Edwin  | Tipos de habitación y habitaciones | `feature/habitaciones`                |
+| Dayra | Huéspedes y estadías               | `feature/huespedesYestadias`         |
+| Paula  | Consumos y cuenta del huésped      | `feature/consumosYcuentas` |
+
+---
+
+# 🏨 BlueHorizon Resort
+
+Sistema de Gestión Hotelera desarrollado como actividad práctica utilizando **NestJS, TypeORM y MySQL**.
