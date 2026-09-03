@@ -1,4 +1,5 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn,} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Estadia } from '../../estadia/entities/estadia.entity';
 import { TipoHabitacion } from '../../tipo-habitacion/entities/tipo-habitacion.entity';
 
 @Entity('habitacion')
@@ -21,12 +22,14 @@ export class Habitacion {
   })
   piso!: number;
 
-  @ManyToOne(() => TipoHabitacion, (tipo_habitacion) => tipo_habitacion.habitaciones,
-    {
-      nullable: false,
-      onDelete: 'RESTRICT',
-      onUpdate: 'RESTRICT',
-    },
-  ) @JoinColumn({name: 'tipo_habitacion_id',})
+  @ManyToOne(() => TipoHabitacion, (tipo_habitacion) => tipo_habitacion.habitaciones, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'tipo_habitacion_id' })
   tipo_habitacion!: TipoHabitacion;
+
+  @OneToMany(() => Estadia, (estadia) => estadia.habitacion)
+  estadias!: Estadia[];
 }
