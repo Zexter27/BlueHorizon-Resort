@@ -18,18 +18,13 @@ export class TipoHabitacionService {
         },
       });
 
-    if (tipoHabitacionExistente) { throw new ConflictException(
-        'Ya existe un tipo de habitación con ese nombre',
-      );
+    if (tipoHabitacionExistente) { 
+      throw new ConflictException( 'Ya existe un tipo de habitación con ese nombre', );
     }
 
-    const tipoHabitacion = this.repositorioTipoHabitacion.create(
-        crearTipoHabitacionDto,
-      );
+    const tipoHabitacion = this.repositorioTipoHabitacion.create(crearTipoHabitacionDto,);
 
-    return await this.repositorioTipoHabitacion.save(
-      tipoHabitacion,
-    );
+    return await this.repositorioTipoHabitacion.save(tipoHabitacion,);
   }
 
   async obtenerTodos(): Promise<TipoHabitacion[]> {
@@ -46,9 +41,7 @@ export class TipoHabitacionService {
       });
 
     if (!tipoHabitacion) {
-      throw new NotFoundException(
-        `No existe el tipo de habitación con ID ${id}`,
-      );
+      throw new NotFoundException( `No existe el tipo de habitación con ID ${id}`,);
     }
 
     return tipoHabitacion;
@@ -65,14 +58,11 @@ export class TipoHabitacionService {
         });
 
       if (tipoHabitacionExistente && tipoHabitacionExistente.id !== id) {
-        throw new ConflictException(
-          'Ya existe otro tipo de habitación con ese nombre',
-        );
+        throw new ConflictException( 'Ya existe otro tipo de habitación con ese nombre', );
       }
     }
 
     Object.assign( tipoHabitacion, actualizarTipoHabitacionDto,);
-
     return await this.repositorioTipoHabitacion.save( tipoHabitacion,);
   }
 

@@ -1,24 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
-
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post,} from '@nestjs/common';
 import { TipoHabitacionService } from './tipo-habitacion.service';
-
 import { CreateTipoHabitacionDto } from './dto/create-tipo-habitacion.dto';
 import { UpdateTipoHabitacionDto } from './dto/update-tipo-habitacion.dto';
 
 @Controller('tipos-habitacion')
 export class TipoHabitacionController {
-  constructor(
-    private readonly tipoHabitacionService: TipoHabitacionService,
-  ) {}
+  constructor( private readonly tipoHabitacionService: TipoHabitacionService,) {}
 
   @Post()
   crear(@Body() crearTipoHabitacionDto: CreateTipoHabitacionDto,) {
@@ -33,18 +20,12 @@ export class TipoHabitacionController {
   }
 
   @Get(':id')
-  obtenerPorId(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  obtenerPorId( @Param('id', ParseIntPipe) id: number,) {
     return this.tipoHabitacionService.obtenerPorId(id);
   }
 
   @Patch(':id')
-  actualizar(
-    @Param('id', ParseIntPipe) id: number,
-    @Body()
-    actualizarTipoHabitacionDto: UpdateTipoHabitacionDto,
-  ) {
+  actualizar( @Param('id', ParseIntPipe) id: number, @Body() actualizarTipoHabitacionDto: UpdateTipoHabitacionDto,) {
     return this.tipoHabitacionService.actualizar(
       id,
       actualizarTipoHabitacionDto,
@@ -52,9 +33,7 @@ export class TipoHabitacionController {
   }
 
   @Delete(':id')
-  eliminar(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  eliminar( @Param('id', ParseIntPipe) id: number,) {
     return this.tipoHabitacionService.eliminar(id);
   }
 }
