@@ -5,6 +5,7 @@ import { Habitacion } from './entities/habitacion.entity';
 import { TipoHabitacion } from '../tipo-habitacion/entities/tipo-habitacion.entity';
 import { CreateHabitacionDto } from './dto/create-habitacion.dto';
 import { UpdateHabitacionDto } from './dto/update-habitacion.dto';
+import { Estadia } from '../estadia/entities/estadia.entity';
 
 @Injectable()
 export class HabitacionService {
@@ -14,6 +15,9 @@ export class HabitacionService {
 
     @InjectRepository(TipoHabitacion)
     private readonly repositorioTipoHabitacion: Repository<TipoHabitacion>,
+
+    @InjectRepository(Estadia)
+    private readonly repositorioEstadia: Repository<Estadia>,
   ) {}
 
   async crear(crearHabitacionDto: CreateHabitacionDto,): Promise<Habitacion> {
@@ -113,6 +117,14 @@ export class HabitacionService {
 
   async eliminar(id: number): Promise<void> {
     const habitacion = await this.obtenerPorId(id);
-    await this.repositorioHabitacion.remove( habitacion,);
+
+    const cantidadEstadias = await this.repositorioEstadia.count({
+        where: { habitacion: { id: habitacion.id,},},
+      });
+
+    if (cantidadEstadias > 0) {
+      throw new ConflictException(`No se puede eliminar la habitación ${habitacion.numero} porque tiene historial de estadías.`,);
+    }
+    await this.repositorioHabitacion.remove(habitacion);
   }
 }
