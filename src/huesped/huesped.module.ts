@@ -3,10 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Huesped } from './entities/huesped.entity';
 import { HuespedController } from './huesped.controller';
 import { HuespedService } from './huesped.service';
+import { Estadia } from '../estadia/entities/estadia.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Huesped]),
+    TypeOrmModule.forFeature([
+      Huesped,
+      Estadia,
+    ]),
   ],
   controllers: [
     HuespedController,

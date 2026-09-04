@@ -8,11 +8,21 @@ import { UpdateConsumoDto } from './dto/update-consumo.dto';
 
 export interface CuentaHuesped {
   estadia_id: number;
+  huesped: {
+    id: number;
+    nombre: string;
+    apellido: string;
+    documento: string;
+    telefono: string | null;
+    correo: string | null;
+  };
+
   habitacion_numero: string;
   tipo_habitacion: string;
   noches: number;
   precio_noche_aplicado: number;
   subtotal_estadia: number;
+
   consumos: {
     id: number;
     descripcion: string;
@@ -21,6 +31,7 @@ export interface CuentaHuesped {
     fecha: Date;
     total: number;
   }[];
+
   total_consumos: number;
   total_acumulado: number;
 }
@@ -49,6 +60,7 @@ export class ConsumoService {
         id: estadiaId,
       },
       relations: {
+        huesped: true,
         habitacion: {
           tipo_habitacion: true,
         },
@@ -175,6 +187,16 @@ export class ConsumoService {
 
     return {
       estadia_id: estadia.id,
+    
+      huesped: {
+        id: estadia.huesped.id,
+        nombre: estadia.huesped.nombre,
+        apellido: estadia.huesped.apellido,
+        documento: estadia.huesped.documento,
+        telefono: estadia.huesped.telefono,
+        correo: estadia.huesped.correo,
+      },
+    
       habitacion_numero: estadia.habitacion.numero,
       tipo_habitacion: estadia.habitacion.tipo_habitacion.nombre,
       noches,

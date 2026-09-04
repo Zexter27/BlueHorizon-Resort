@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException,} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, BadRequestException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Habitacion } from './entities/habitacion.entity';
@@ -6,6 +6,7 @@ import { TipoHabitacion } from '../tipo-habitacion/entities/tipo-habitacion.enti
 import { CreateHabitacionDto } from './dto/create-habitacion.dto';
 import { UpdateHabitacionDto } from './dto/update-habitacion.dto';
 import { Estadia } from '../estadia/entities/estadia.entity';
+import { ConsultarDisponibilidadDto } from './dto/consultar-disponibilidad.dto';
 
 @Injectable()
 export class HabitacionService {
@@ -61,6 +62,50 @@ export class HabitacionService {
     });
   }
 
+  async obtenerDisponibles( consultarDisponibilidadDto: ConsultarDisponibilidadDto,): Promise<Habitacion[]> {
+    const fechaEntrada = new Date(consultarDisponibilidadDto.fecha_entrada,);
+    const fechaSalida = new Date(consultarDisponibilidadDto.fecha_salida,);
+
+    if (fechaSalida <= fechaEntrada) {throw new BadRequestException(
+        'La fecha de salida debe ser posterior a la fecha de entrada',
+      );
+    }
+
+    const estadiasSolapadas = await this.repositorioEstadia
+      .createQueryBuilder('estadia')
+      .select('estadia.habitacion_id')
+      .where('estadia.fecha_entrada < :fechaSalida', {
+        fechaSalida,
+      })
+      .andWhere('estadia.fecha_salida > :fechaEntrada', {
+        fechaEntrada,
+      })
+      .getRawMany();
+
+    const idsHabitacionesOcupadas = estadiasSolapadas.map(
+      (estadia) => estadia.habitacion_id,
+    );
+
+    const consulta = this.repositorioHabitacion
+      .createQueryBuilder('habitacion')
+      .leftJoinAndSelect(
+        'habitacion.tipo_habitacion',
+        'tipo_habitacion',
+      );
+
+    if (idsHabitacionesOcupadas.length > 0) {
+      consulta.where('habitacion.id NOT IN (:...idsHabitacionesOcupadas)',
+        {
+          idsHabitacionesOcupadas,
+        },
+      );
+    }
+
+    return await consulta
+      .orderBy('habitacion.id', 'ASC')
+      .getMany();
+  }
+
   async obtenerPorId(id: number): Promise<Habitacion> {
     const habitacion = await this.repositorioHabitacion.findOne({
       where: {
@@ -76,6 +121,8 @@ export class HabitacionService {
     }
     return habitacion;
   }
+
+  
 
   async actualizar( id: number, actualizarHabitacionDto: UpdateHabitacionDto,): Promise<Habitacion> {
     const habitacion = await this.obtenerPorId(id);

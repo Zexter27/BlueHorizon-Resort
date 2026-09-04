@@ -37,6 +37,7 @@ export class Estadia {
   })
   fecha_salida!: Date;
 
+
   @Column({
     type: 'decimal',
     precision: 10,

@@ -4,12 +4,16 @@ import { Repository } from 'typeorm';
 import { Huesped } from './entities/huesped.entity';
 import { CreateHuespedDto } from './dto/create-huesped.dto';
 import { UpdateHuespedDto } from './dto/update-huesped.dto';
+import { Estadia } from '../estadia/entities/estadia.entity';
 
 @Injectable()
 export class HuespedService {
   constructor(
     @InjectRepository(Huesped)
     private readonly repositorioHuesped: Repository<Huesped>,
+
+    @InjectRepository(Estadia)
+    private readonly repositorioEstadia: Repository<Estadia>,
   ) {}
 
   async crear(crearHuespedDto: CreateHuespedDto): Promise<Huesped> {
@@ -83,6 +87,22 @@ export class HuespedService {
 
   async eliminar(id: number): Promise<void> {
     const huesped = await this.obtenerPorId(id);
+  
+    const cantidadEstadias =
+      await this.repositorioEstadia.count({
+        where: {
+          huesped: {
+            id: huesped.id,
+          },
+        },
+      });
+    
+    if (cantidadEstadias > 0) {
+      throw new ConflictException(
+        `No se puede eliminar el huésped ${huesped.nombre} ${huesped.apellido} porque tiene ${cantidadEstadias} estadía(s) asociada(s).`,
+      );
+    }
+  
     await this.repositorioHuesped.remove(huesped);
   }
 }

@@ -1,7 +1,8 @@
-import {Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post,} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post,  Query,} from '@nestjs/common';
 import { HabitacionService } from './habitacion.service';
 import { CreateHabitacionDto } from './dto/create-habitacion.dto';
 import { UpdateHabitacionDto } from './dto/update-habitacion.dto';
+import { ConsultarDisponibilidadDto } from './dto/consultar-disponibilidad.dto';
 
 @Controller('habitaciones')
 export class HabitacionController {
@@ -17,6 +18,13 @@ export class HabitacionController {
   @Get()
   obtenerTodos() {
     return this.habitacionService.obtenerTodos();
+  }
+
+  @Get('disponibles')
+  obtenerDisponibles(@Query() consultarDisponibilidadDto: ConsultarDisponibilidadDto,) {
+    return this.habitacionService.obtenerDisponibles(
+      consultarDisponibilidadDto,
+    );
   }
 
   @Get(':id')
