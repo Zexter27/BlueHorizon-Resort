@@ -114,90 +114,8 @@ Estas opciones permiten:
 * Rechazar propiedades desconocidas.
 * Transformar determinados valores recibidos por la API.
 
-
-# 🌿 Organización de Ramas
-
-El proyecto se divide en ramas principales para facilitar el trabajo colaborativo.
-
-### `feature/database-model`
-
-Responsable de:
-
-* Modelado de la base de datos.
-* Entidades y relaciones.
-* Configuración de MySQL.
-* Configuración de TypeORM.
-* Variables de entorno.
-* Integridad referencial.
-
 ---
 
-### `feature/rooms`
-
-Responsable de:
-
-* Tipos de habitación.
-* Habitaciones.
-* CRUD correspondiente.
-* DTOs.
-* Servicios.
-* Controladores.
-* Validaciones.
-
----
-
-### `feature/guests-stays`
-
-Responsable de:
-
-* Gestión de huéspedes.
-* Gestión de estadías.
-* Registro de reservas.
-* Disponibilidad de habitaciones.
-* Prevención de sobreventa.
-* Cálculo automático del subtotal.
-
----
-
-### `feature/consumptions-account`
-
-Responsable de:
-
-* Registro de consumos.
-* Relación entre consumos y estadías.
-* Consulta detallada de la cuenta.
-* Cálculo del total acumulado.
-
----
-
-# 🔄 Flujo de Trabajo con Git
-
-El orden recomendado para integrar las funcionalidades es:
-
-```text
-1. feature/database-model
-            │
-            ▼
-          main
-            │
-            ▼
-2. feature/rooms
-            │
-            ▼
-          main
-            │
-            ▼
-3. feature/guests-stays
-            │
-            ▼
-          main
-            │
-            ▼
-4. feature/consumptions-account
-            │
-            ▼
-          main
-```
 
 Antes de realizar un Pull Request, cada integrante debe actualizar su rama con los últimos cambios de `main`.
 
@@ -280,32 +198,6 @@ El proyecto cumple y/o contempla los siguientes requerimientos:
 * Cálculo de datos derivados en el backend.
 * Preparación para migraciones de base de datos.
 * Pruebas de endpoints mediante Postman.
-
----
-
-# 📌 Estado Actual del Proyecto
-
-| Módulo                          | Estado         |
-| ------------------------------- | -------------- |
-| Configuración NestJS            | ✅ Completado   |
-| Configuración `.env`            | ✅ Completado   |
-| Configuración TypeORM           | ✅ Completado   |
-| Conexión MySQL                  | ✅ Completado   |
-| Modelo de base de datos         | ✅ Completado   |
-| Tipo de habitación              | ✅ Completado   |
-| Habitación                      | ✅ Completado   |
-| DTOs                            | ✅ Completado   |
-| Validación de datos             | ✅ Completado   |
-| Manejo personalizado de errores | 🔄 Pendiente    |
-| Integridad referencial          | ✅ Implementado |
-| Protección de eliminación       | 🔄 Pendiente  |
-| Huésped                         | 🔄 Pendiente   |
-| Estadía                         | 🔄 Pendiente   |
-| Control de disponibilidad       | 🔄 Pendiente   |
-| Prevención de sobreventa        | 🔄 Pendiente   |
-| Consumos                        | 🔄 Pendiente   |
-| Cuenta del huésped              | 🔄 Pendiente   |
-| Pruebas completas               | 🔄 Pendiente   |
 
 ---
 
