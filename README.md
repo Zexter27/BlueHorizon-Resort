@@ -172,35 +172,6 @@ npm run start:dev
 
 ---
 
-
-# 📚 Requerimientos Técnicos
-
-El proyecto cumple y/o contempla los siguientes requerimientos:
-
-* Uso de **NestJS**.
-* Uso de **TypeScript**.
-* Arquitectura modular.
-* Controladores y servicios separados.
-* Persistencia mediante **TypeORM**.
-* Base de datos **MySQL**.
-* Uso de **DTOs**.
-* Validación mediante `class-validator`.
-* Transformación mediante `class-transformer`.
-* Inyección de dependencias.
-* Repositorios inyectados.
-* Relaciones entre entidades.
-* Variables de entorno mediante `.env`.
-* Manejo de excepciones HTTP.
-* Filtro global personalizado para errores.
-* Integridad referencial mediante claves foráneas.
-* Protección contra eliminación de registros relacionados.
-* Separación entre lógica de presentación y lógica de negocio.
-* Cálculo de datos derivados en el backend.
-* Preparación para migraciones de base de datos.
-* Pruebas de endpoints mediante Postman.
-
----
-
 # 👥 Equipo de Desarrollo
 
 El proyecto es desarrollado de manera colaborativa por un equipo de cuatro integrantes.
@@ -212,32 +183,3 @@ El proyecto es desarrollado de manera colaborativa por un equipo de cuatro integ
 | **Dayra**  | Huéspedes y estadías               | `feature/huespedesYestadias` |
 | **Paula**  | Consumos y cuenta del huésped      | `feature/consumosYcuentas`   |
 
----
-
-# 🏨 BlueHorizon Resort
-
-**BlueHorizon Resort API** es un sistema de gestión hotelera desarrollado como actividad práctica utilizando:
-
-```text
-NestJS
-   +
-TypeScript
-   +
-TypeORM
-   +
-MySQL
-```
-
-El proyecto busca aplicar conceptos de:
-
-* Desarrollo de APIs REST.
-* Arquitectura modular.
-* Programación orientada a objetos.
-* Inyección de dependencias.
-* Persistencia de datos.
-* Modelado relacional.
-* Validación de información.
-* Reglas de negocio.
-* Integridad de datos.
-* Manejo de errores.
-* Trabajo colaborativo con Git.
