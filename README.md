@@ -1,6 +1,6 @@
 
 
-![](blueHorizon.png)
+![](blueHorizon.jpg)
 
 ## 📋 Descripción
 
