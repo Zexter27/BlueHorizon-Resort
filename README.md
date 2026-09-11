@@ -1,4 +1,6 @@
-# 🏨 BlueHorizon Resort API
+
+
+![](blueHorizon.png)
 
 ## 📋 Descripción
 
