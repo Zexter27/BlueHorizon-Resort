@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
-import { appModule } from './config/config.module';
+import { AppConfigModule } from './config/config.module';
 import { HabitacionModule } from './habitacion/habitacion.module';
 import { TipoHabitacionModule } from './tipo-habitacion/tipo-habitacion.module';
 import { HuespedModule } from './huesped/huesped.module';
@@ -11,7 +11,7 @@ import { ConsumoModule } from './consumo/consumo.module';
 
 @Module({
   imports: [
-    appModule,
+    AppConfigModule,
     DatabaseModule,
     HabitacionModule,
     TipoHabitacionModule,

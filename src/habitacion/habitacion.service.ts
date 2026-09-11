@@ -5,7 +5,7 @@ import { Habitacion } from './entities/habitacion.entity';
 import { TipoHabitacion } from '../tipo-habitacion/entities/tipo-habitacion.entity';
 import { CreateHabitacionDto } from './dto/create-habitacion.dto';
 import { UpdateHabitacionDto } from './dto/update-habitacion.dto';
-import { Estadia } from '../estadia/entities/estadia.entity';
+import { Estadia, EstadoEstadia } from '../estadia/entities/estadia.entity';
 import { ConsultarDisponibilidadDto } from './dto/consultar-disponibilidad.dto';
 
 @Injectable()
@@ -74,7 +74,8 @@ export class HabitacionService {
     const estadiasSolapadas = await this.repositorioEstadia
       .createQueryBuilder('estadia')
       .select('estadia.habitacion_id')
-      .where('estadia.fecha_entrada < :fechaSalida', {
+      .where('estadia.estado = :estado', { estado: EstadoEstadia.ACTIVA })
+      .andWhere('estadia.fecha_entrada < :fechaSalida', {
         fechaSalida,
       })
       .andWhere('estadia.fecha_salida > :fechaEntrada', {

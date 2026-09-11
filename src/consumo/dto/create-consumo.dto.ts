@@ -1,13 +1,4 @@
-import {
-  IsDateString,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  MaxLength,
-  Min,
-} from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min,} from 'class-validator';
 
 export class CreateConsumoDto {
   @IsInt()
@@ -20,7 +11,7 @@ export class CreateConsumoDto {
   descripcion!: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(0.01)
   precio!: number;
 
   @IsOptional()

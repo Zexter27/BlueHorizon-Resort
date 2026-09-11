@@ -1,13 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Consumo } from './entities/consumo.entity';
-import { Estadia } from '../estadia/entities/estadia.entity';
+import { Estadia, EstadoEstadia } from '../estadia/entities/estadia.entity';
 import { CreateConsumoDto } from './dto/create-consumo.dto';
 import { UpdateConsumoDto } from './dto/update-consumo.dto';
 
 export interface CuentaHuesped {
   estadia_id: number;
+  estado: EstadoEstadia;
   huesped: {
     id: number;
     nombre: string;
@@ -80,6 +81,12 @@ export class ConsumoService {
       crearConsumoDto.estadia_id,
     );
 
+    if (estadia.estado === EstadoEstadia.CANCELADA) {
+      throw new ConflictException(
+        'No se puede registrar un consumo en una estadía cancelada.',
+      );
+    }
+
     const consumo = this.repositorioConsumo.create({
       estadia,
       descripcion: crearConsumoDto.descripcion,
@@ -125,10 +132,21 @@ export class ConsumoService {
   ): Promise<Consumo> {
     const consumo = await this.obtenerPorId(id);
 
+    if (consumo.estadia.estado === EstadoEstadia.CANCELADA) {
+      throw new ConflictException(
+        'No se puede modificar un consumo perteneciente a una estadía cancelada.',
+      );
+    }
+
     if (actualizarConsumoDto.estadia_id !== undefined) {
       const estadia = await this.obtenerEstadiaOFallar(
         actualizarConsumoDto.estadia_id,
       );
+      if (estadia.estado === EstadoEstadia.CANCELADA) {
+        throw new ConflictException(
+          'No se puede asociar un consumo a una estadía cancelada.',
+        );
+      }
       consumo.estadia = estadia;
     }
 
@@ -187,6 +205,7 @@ export class ConsumoService {
 
     return {
       estadia_id: estadia.id,
+      estado: estadia.estado,
     
       huesped: {
         id: estadia.huesped.id,

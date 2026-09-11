@@ -4,11 +4,14 @@ import { Repository } from 'typeorm';
 import { TipoHabitacion } from './entities/tipo-habitacion.entity';
 import { CreateTipoHabitacionDto } from './dto/create-tipo-habitacion.dto';
 import { UpdateTipoHabitacionDto } from './dto/update-tipo-habitacion.dto';
+import { Habitacion } from '../habitacion/entities/habitacion.entity';
 
 @Injectable()
 export class TipoHabitacionService {
   constructor( @InjectRepository(TipoHabitacion)
     private readonly repositorioTipoHabitacion: Repository<TipoHabitacion>,
+    @InjectRepository(Habitacion)
+    private readonly repositorioHabitacion: Repository<Habitacion>,
   ) {}
 
   async crear(crearTipoHabitacionDto: CreateTipoHabitacionDto,): Promise<TipoHabitacion> {
@@ -68,6 +71,19 @@ export class TipoHabitacionService {
 
   async eliminar(id: number): Promise<void> {
     const tipoHabitacion = await this.obtenerPorId(id);
-    await this.repositorioTipoHabitacion.remove( tipoHabitacion,);
+
+    const cantidadHabitaciones = await this.repositorioHabitacion.count({
+      where: {
+        tipo_habitacion: { id: tipoHabitacion.id },
+      },
+    });
+
+    if (cantidadHabitaciones > 0) {
+      throw new ConflictException(
+        `No se puede eliminar el tipo de habitación ${tipoHabitacion.nombre} porque tiene ${cantidadHabitaciones} habitación(es) asociada(s).`,
+      );
+    }
+
+    await this.repositorioTipoHabitacion.remove(tipoHabitacion);
   }
 }

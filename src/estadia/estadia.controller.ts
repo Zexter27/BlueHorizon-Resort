@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post,} from '@nestjs/common';
 import { EstadiaService } from './estadia.service';
 import { CreateEstadiaDto } from './dto/create-estadia.dto';
 import { UpdateEstadiaDto } from './dto/update-estadia.dto';
@@ -30,8 +30,8 @@ export class EstadiaController {
     return this.estadiaService.actualizar(id, actualizarEstadiaDto);
   }
 
-  @Delete(':id')
-  eliminar(@Param('id', ParseIntPipe) id: number) {
-    return this.estadiaService.eliminar(id);
+  @Patch(':id/cancelar')
+  cancelar(@Param('id', ParseIntPipe) id: number) {
+    return this.estadiaService.cancelar(id);
   }
 }

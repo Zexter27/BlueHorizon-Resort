@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException, ConflictException, } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Estadia } from './entities/estadia.entity';
+import { Estadia, EstadoEstadia } from './entities/estadia.entity';
 import { Huesped } from '../huesped/entities/huesped.entity';
 import { Habitacion } from '../habitacion/entities/habitacion.entity';
 import { CreateEstadiaDto } from './dto/create-estadia.dto';
@@ -14,6 +14,7 @@ export interface EstadiaConCalculos {
   fecha_entrada: Date;
   fecha_salida: Date;
   precio_noche_aplicado: number;
+  estado: EstadoEstadia;
   noches: number;
   subtotal: number;
 }
@@ -23,10 +24,8 @@ export class EstadiaService {
   constructor(
     @InjectRepository(Estadia)
     private readonly repositorioEstadia: Repository<Estadia>,
-
     @InjectRepository(Huesped)
     private readonly repositorioHuesped: Repository<Huesped>,
-
     @InjectRepository(Habitacion)
     private readonly repositorioHabitacion: Repository<Habitacion>,
   ) {}
@@ -39,41 +38,22 @@ export class EstadiaService {
   ): Promise<boolean> {
     const consulta = this.repositorioEstadia
       .createQueryBuilder('estadia')
-      .where('estadia.habitacion_id = :habitacionId', {
-        habitacionId,
-      })
-      .andWhere(
-        'estadia.fecha_entrada < :fechaSalida',
-        {
-          fechaSalida,
-        },
-      )
-      .andWhere(
-        'estadia.fecha_salida > :fechaEntrada',
-        {
-          fechaEntrada,
-        },
-      );
+      .where('estadia.habitacion_id = :habitacionId', { habitacionId })
+      .andWhere('estadia.estado = :estado', { estado: EstadoEstadia.ACTIVA })
+      .andWhere('estadia.fecha_entrada < :fechaSalida', { fechaSalida })
+      .andWhere('estadia.fecha_salida > :fechaEntrada', { fechaEntrada });
 
     if (estadiaIdExcluir !== undefined) {
-      consulta.andWhere(
-        'estadia.id != :estadiaIdExcluir',
-        {
-          estadiaIdExcluir,
-        },
-      );
+      consulta.andWhere('estadia.id != :estadiaIdExcluir', {
+        estadiaIdExcluir,
+      });
     }
 
-    const cantidad = await consulta.getCount();
-
-    return cantidad > 0;
+    return (await consulta.getCount()) > 0;
   }
 
   private calcularNoches(fechaEntrada: Date, fechaSalida: Date): number {
-    const entrada = new Date(fechaEntrada);
-    const salida = new Date(fechaSalida);
-
-    const difMs = salida.getTime() - entrada.getTime();
+    const difMs = fechaSalida.getTime() - fechaEntrada.getTime();
     const noches = Math.round(difMs / (1000 * 60 * 60 * 24));
 
     if (noches <= 0) {
@@ -90,7 +70,6 @@ export class EstadiaService {
       estadia.fecha_entrada,
       estadia.fecha_salida,
     );
-
     const subtotal = Number(estadia.precio_noche_aplicado) * noches;
 
     return {
@@ -100,146 +79,107 @@ export class EstadiaService {
       fecha_entrada: estadia.fecha_entrada,
       fecha_salida: estadia.fecha_salida,
       precio_noche_aplicado: Number(estadia.precio_noche_aplicado),
+      estado: estadia.estado,
       noches,
       subtotal,
     };
   }
 
-  async crear(
-    crearEstadiaDto: CreateEstadiaDto,
-  ): Promise<EstadiaConCalculos> {
-    const huesped =
-      await this.repositorioHuesped.findOne({
-        where: {
-          id: crearEstadiaDto.huesped_id,
-        },
-      });
-
+  async crear(dto: CreateEstadiaDto): Promise<EstadiaConCalculos> {
+    const huesped = await this.repositorioHuesped.findOne({
+      where: { id: dto.huesped_id },
+    });
     if (!huesped) {
-      throw new NotFoundException(
-        `No existe el huésped con ID ${crearEstadiaDto.huesped_id}`,
-      );
+      throw new NotFoundException(`No existe el huésped con ID ${dto.huesped_id}`);
     }
 
-    const habitacion =
-      await this.repositorioHabitacion.findOne({
-        where: {
-          id: crearEstadiaDto.habitacion_id,
-        },
-        relations: {
-          tipo_habitacion: true,
-        },
-      });
-
+    const habitacion = await this.repositorioHabitacion.findOne({
+      where: { id: dto.habitacion_id },
+      relations: { tipo_habitacion: true },
+    });
     if (!habitacion) {
       throw new NotFoundException(
-        `No existe la habitación con ID ${crearEstadiaDto.habitacion_id}`,
+        `No existe la habitación con ID ${dto.habitacion_id}`,
       );
     }
 
-    const fechaEntrada =
-      new Date(crearEstadiaDto.fecha_entrada);
+    const fechaEntrada = new Date(dto.fecha_entrada);
+    const fechaSalida = new Date(dto.fecha_salida);
+    this.calcularNoches(fechaEntrada, fechaSalida);
 
-    const fechaSalida =
-      new Date(crearEstadiaDto.fecha_salida);
-
-    this.calcularNoches(
-      fechaEntrada,
-      fechaSalida,
-    );
-
-    const existeConflicto =
+    if (
       await this.existeSolapamiento(
         habitacion.id,
         fechaEntrada,
         fechaSalida,
-      );
-
-    if (existeConflicto) {
+      )
+    ) {
       throw new ConflictException(
         `La habitación ${habitacion.numero} ya tiene una estadía registrada durante las fechas seleccionadas.`,
       );
     }
 
-    const precioNocheAplicado =
-      Number(
-        habitacion.tipo_habitacion.precio_noche,
-      );
+    const estadia = this.repositorioEstadia.create({
+      huesped,
+      habitacion,
+      fecha_entrada: fechaEntrada,
+      fecha_salida: fechaSalida,
+      // RB-16: se congela el precio vigente en el momento de crear la estadía.
+      precio_noche_aplicado: Number(habitacion.tipo_habitacion.precio_noche),
+      estado: EstadoEstadia.ACTIVA,
+    });
 
-    const estadia =
-      this.repositorioEstadia.create({
-        huesped,
-        habitacion,
-        fecha_entrada: fechaEntrada,
-        fecha_salida: fechaSalida,
-        precio_noche_aplicado:
-          precioNocheAplicado,
-      });
-
-    const guardado =
-      await this.repositorioEstadia.save(
-        estadia,
-      );
-
+    const guardado = await this.repositorioEstadia.save(estadia);
     return this.mapearConCalculos(
-      guardado,
+      await this.obtenerEntidadPorId(guardado.id),
     );
   }
 
-  async eliminar(id: number): Promise<void> {
-    const estadia = await this.obtenerEntidadPorId(id);
-    await this.repositorioEstadia.remove(estadia);
-  }
-
-
-  async actualizar( id: number, actualizarEstadiaDto: UpdateEstadiaDto,): Promise<EstadiaConCalculos> {
-
+  async actualizar(
+    id: number,
+    dto: UpdateEstadiaDto,
+  ): Promise<EstadiaConCalculos> {
     const estadia = await this.obtenerEntidadPorId(id);
 
-    let huespedFinal = estadia.huesped;
-
-    if (actualizarEstadiaDto.huesped_id !== undefined ) {
-      const huesped = await this.repositorioHuesped.findOne({
-          where: { id: actualizarEstadiaDto.huesped_id,},
-      });
-
-      if (!huesped) {throw new NotFoundException(
-          `No existe el huésped con ID ${actualizarEstadiaDto.huesped_id}`,
-        );
-      }
-      huespedFinal = huesped;
+    if (estadia.estado === EstadoEstadia.CANCELADA) {
+      throw new ConflictException(
+        'No se puede modificar una estadía cancelada.',
+      );
     }
 
+    const huespedFinal = dto.huesped_id !== undefined
+      ? await this.obtenerHuesped(dto.huesped_id)
+      : estadia.huesped;
+
     let habitacionFinal = estadia.habitacion;
-    let precioNocheAplicado = estadia.precio_noche_aplicado;
+    let precioNocheAplicado = Number(estadia.precio_noche_aplicado);
 
-    if ( actualizarEstadiaDto.habitacion_id !== undefined) {
-      const habitacion = await this.repositorioHabitacion.findOne({
-        where: { id: actualizarEstadiaDto.habitacion_id, },
-        relations: { tipo_habitacion: true,},
-      });
+    if (dto.habitacion_id !== undefined) {
+      habitacionFinal = await this.obtenerHabitacion(dto.habitacion_id);
+      // Al cambiar explícitamente de habitación se aplica el precio actual
+      // del nuevo tipo; desde ese momento queda congelado en la estadía.
+      precioNocheAplicado = Number(
+        habitacionFinal.tipo_habitacion.precio_noche,
+      );
+    }
 
-      if (!habitacion) {
-        throw new NotFoundException(
-          `No existe la habitación con ID ${actualizarEstadiaDto.habitacion_id}`,
-        );
-      }
-      habitacionFinal = habitacion;
-      precioNocheAplicado = Number( habitacion.tipo_habitacion.precio_noche,);}
+    const fechaEntradaFinal = dto.fecha_entrada
+      ? new Date(dto.fecha_entrada)
+      : estadia.fecha_entrada;
+    const fechaSalidaFinal = dto.fecha_salida
+      ? new Date(dto.fecha_salida)
+      : estadia.fecha_salida;
 
-    const fechaEntradaFinal = actualizarEstadiaDto.fecha_entrada ? new Date( actualizarEstadiaDto.fecha_entrada, ) : estadia.fecha_entrada;
-    const fechaSalidaFinal = actualizarEstadiaDto.fecha_salida ? new Date( actualizarEstadiaDto.fecha_salida,) : estadia.fecha_salida;
+    this.calcularNoches(fechaEntradaFinal, fechaSalidaFinal);
 
-    this.calcularNoches( fechaEntradaFinal, fechaSalidaFinal, );
-
-    const existeConflicto = await this.existeSolapamiento(
-      habitacionFinal.id,
-      fechaEntradaFinal,
-      fechaSalidaFinal,
-      id,
-    );
-
-    if (existeConflicto) {
+    if (
+      await this.existeSolapamiento(
+        habitacionFinal.id,
+        fechaEntradaFinal,
+        fechaSalidaFinal,
+        id,
+      )
+    ) {
       throw new ConflictException(
         `La habitación ${habitacionFinal.numero} ya tiene una estadía registrada durante las fechas seleccionadas.`,
       );
@@ -251,48 +191,71 @@ export class EstadiaService {
     estadia.fecha_salida = fechaSalidaFinal;
     estadia.precio_noche_aplicado = precioNocheAplicado;
 
-    const guardado = await this.repositorioEstadia.save(estadia,);
-    return this.mapearConCalculos(guardado,);
+    await this.repositorioEstadia.save(estadia);
+    return this.mapearConCalculos(await this.obtenerEntidadPorId(id));
+  }
+
+  async cancelar(id: number): Promise<EstadiaConCalculos> {
+    const estadia = await this.obtenerEntidadPorId(id);
+
+    if (estadia.estado === EstadoEstadia.CANCELADA) {
+      return this.mapearConCalculos(estadia);
+    }
+
+    estadia.estado = EstadoEstadia.CANCELADA;
+    await this.repositorioEstadia.save(estadia);
+
+    return this.mapearConCalculos(await this.obtenerEntidadPorId(id));
   }
 
   async obtenerTodos(): Promise<EstadiaConCalculos[]> {
     const estadias = await this.repositorioEstadia.find({
       relations: {
         huesped: true,
-        habitacion: {
-          tipo_habitacion: true,
-        },
+        habitacion: { tipo_habitacion: true },
       },
-      order: {
-        id: 'ASC',
-      },
+      order: { id: 'ASC' },
     });
 
     return estadias.map((estadia) => this.mapearConCalculos(estadia));
   }
 
   async obtenerPorId(id: number): Promise<EstadiaConCalculos> {
-    const estadia = await this.obtenerEntidadPorId(id);
-    return this.mapearConCalculos(estadia);
+    return this.mapearConCalculos(await this.obtenerEntidadPorId(id));
+  }
+
+  private async obtenerHuesped(id: number): Promise<Huesped> {
+    const huesped = await this.repositorioHuesped.findOne({ where: { id } });
+    if (!huesped) {
+      throw new NotFoundException(`No existe el huésped con ID ${id}`);
+    }
+    return huesped;
+  }
+
+  private async obtenerHabitacion(id: number): Promise<Habitacion> {
+    const habitacion = await this.repositorioHabitacion.findOne({
+      where: { id },
+      relations: { tipo_habitacion: true },
+    });
+    if (!habitacion) {
+      throw new NotFoundException(`No existe la habitación con ID ${id}`);
+    }
+    return habitacion;
   }
 
   private async obtenerEntidadPorId(id: number): Promise<Estadia> {
     const estadia = await this.repositorioEstadia.findOne({
-      where: {
-        id,
-      },
+      where: { id },
       relations: {
         huesped: true,
-        habitacion: {
-          tipo_habitacion: true,
-        },
+        habitacion: { tipo_habitacion: true },
+        consumos: true,
       },
     });
 
     if (!estadia) {
       throw new NotFoundException(`No existe la estadía con ID ${id}`);
     }
-
     return estadia;
   }
 }
